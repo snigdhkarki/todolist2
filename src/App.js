@@ -1,25 +1,47 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState, useEffect } from 'react';
+import ProjectForm from './components/ProjectForm';
+import ProjectList from './components/ProjectList';
+import "./App.css";
 
-function App() {
+const App = () => {
+  const [projects, setProjects] = useState([]);
+  const [sortBy, setSortBy] = useState('id');
+
+  useEffect(() => {
+    const storedProjects = JSON.parse(localStorage.getItem('projects'));
+    if (storedProjects) {
+      setProjects(storedProjects);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem('projects', JSON.stringify(projects));
+  }, [projects]);
+
+  const addProject = (project) => {
+    setProjects([...projects, { ...project, id: projects.length + 1 }]);
+  };
+
+  const handleDelete = (id) => {
+    setProjects(projects.filter((project) => project.id !== id));
+  };
+
+  const sortProjects = (sortKey) => {
+    setSortBy(sortKey);
+    setProjects([...projects].sort((a, b) => (a[sortKey] > b[sortKey] ? 1 : -1)));
+    window.location.reload();
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1 className='title'>To-Do List</h1>
+      <ProjectForm addProject={addProject} />
+      <button onClick={() => sortProjects('projectDeadline')}>
+        Sort by Deadline
+      </button>
+      <ProjectList projects={projects} handleDelete={handleDelete} />
     </div>
   );
-}
+};
 
 export default App;
